@@ -10,7 +10,7 @@ public class ReadingObject {
     public static void main(String[] args) throws SQLException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, InstantiationException {
         EntityManager<Person> entityManager = EntityManager.of(Person.class);
 
-        Person chirag = entityManager.find(Person.class, 27L);
+        Person chirag = entityManager.find(Person.class, 1L);
         System.out.println(chirag);
     }
 }

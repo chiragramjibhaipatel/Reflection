@@ -18,17 +18,20 @@ public class EntityManagerImpl<T> implements EntityManager<T> {
 
         Metamodel metamodel = Metamodel.of(t.getClass());
         String sql = metamodel.buildInsertRequest();
-        PreparedStatement statement = prepareStatementWith(sql).andParameter(t);
-        statement.executeUpdate();
+        try (PreparedStatement statement = prepareStatementWith(sql).andParameter(t)) {
+            statement.executeUpdate();
+        }
     }
 
     @Override
     public T find(Class<T> clss, Object primaryKey) throws SQLException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, InstantiationException {
         Metamodel metamodel = Metamodel.of(clss);
         String sql = metamodel.buildSelectQuery(primaryKey);
-        PreparedStatement statement = prepareStatementWith(sql).andPrimaryKey(primaryKey);
-        ResultSet resultSet = statement.executeQuery();
-        return buildClassInstance(clss, resultSet);
+        ResultSet resultSet;
+        try (PreparedStatement statement = prepareStatementWith(sql).andPrimaryKey(primaryKey)) {
+            resultSet = statement.executeQuery();
+            return buildClassInstance(clss, resultSet);
+        }
     }
 
     private T buildClassInstance(Class<T> clss, ResultSet resultSet) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, SQLException {
@@ -60,7 +63,8 @@ public class EntityManagerImpl<T> implements EntityManager<T> {
 
     private PreparedStatementWrapper prepareStatementWith(String sql) throws SQLException {
 
-        Connection connection = DriverManager.getConnection("jdbc:h2:/Users/chiragpatel/Code/Training/db/db_person", "sa", "");
+        Connection connection =
+                DriverManager.getConnection("jdbc:h2:/Users/chiragpatel/Code/Training/db/db_person", "sa", "");
         PreparedStatement statement = connection.prepareStatement(sql);
         return new PreparedStatementWrapper(statement);
     }
